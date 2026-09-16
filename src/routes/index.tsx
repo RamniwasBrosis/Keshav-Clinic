@@ -135,7 +135,7 @@ function ClinicPage() {
             <a href={`tel:+${phone}`} className="icon-button" aria-label={`Call ${displayPhone}`}><Phone className="size-4" /></a>
             <button className="button-gold" onClick={() => openBooking()}><CalendarDays className="size-4" /> Book Appointment</button>
           </div>
-          <button className="icon-button lg:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
+          <button className="icon-button lg:!hidden" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
         </div>
         {menuOpen && <nav className="grid gap-1 border-t border-header-border bg-header px-5 py-4 lg:hidden" aria-label="Mobile navigation">{[["Pain Guide", "pain-guide"], ["Services", "services"], ["Approach", "approach"], ["Reviews", "reviews"], ["Visit", "visit"]].map(([label,id]) => <a key={id} href={`#${id}`} className="py-3" onClick={() => setMenuOpen(false)}>{label}</a>)}</nav>}
       </header>
@@ -161,7 +161,7 @@ function ClinicPage() {
             <div className="flex gap-3"><Clock3 className="mt-0.5 size-5 text-gold" /><div><strong className="block text-sm">Open 6 days/week</strong><p className="mt-1 text-xs leading-5 text-primary-foreground/70">Mon–Sat 8:00 AM–2:00 PM<br />& 4:30 PM–9:30 PM<br />Sunday limited hours</p></div></div>
           </div>
           <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-primary-foreground/15 bg-primary-foreground/15 lg:col-span-2 lg:grid-cols-4">
-            {[["4.9★", "Google Rating"], ["102+", "Verified Reviews"], ["6 Days", "Open Weekly"], ["100%", "Personalised Care"]].map(([value,label]) => <div key={label} className="bg-primary/55 px-5 py-5 backdrop-blur-md"><div className="font-display text-3xl text-gold">{value}</div><div className="mt-1 text-xs uppercase tracking-widest text-primary-foreground/65">{label}</div></div>)}
+            {[[4.9, "★", "Google Rating", 1], [102, "+", "Verified Reviews", 0], [6, " Days", "Open Weekly", 0], [100, "%", "Personalised Care", 0]].map(([value,suffix,label,decimals]) => <div key={String(label)} className="bg-primary/55 px-5 py-5 backdrop-blur-md"><div className="font-display text-3xl text-gold"><CountUp value={Number(value)} suffix={String(suffix)} decimals={Number(decimals)} /></div><div className="mt-1 text-xs uppercase tracking-widest text-primary-foreground/65">{label}</div></div>)}
           </div>
         </div>
       </section>
@@ -266,4 +266,29 @@ function SectionIntro({ eyebrow, title, text, dark = false }: { eyebrow: string;
 
 function ListBlock({ title, items, compact = false }: { title?: string; items: string[]; compact?: boolean }) {
   return <div>{title && <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</h4>}<ul className={`${title ? "mt-4" : compact ? "mt-5 border-t border-border pt-5" : "mt-3"} grid gap-3`}>{items.map((item) => <li key={item} className="flex gap-2.5 text-sm"><Check className="mt-0.5 size-4 shrink-0 text-gold" /><span>{item}</span></li>)}</ul></div>;
+}
+
+function CountUp({ value, suffix, decimals }: { value: number; suffix: string; decimals: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      const started = performance.now();
+      const tick = (time: number) => {
+        const progress = Math.min((time - started) / 1100, 1);
+        setCount(value * (1 - Math.pow(1 - progress, 3)));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      observer.disconnect();
+    }, { threshold: .5 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [value]);
+
+  return <span ref={ref}>{count.toFixed(decimals)}{suffix}</span>;
 }
