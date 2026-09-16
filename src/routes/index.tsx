@@ -118,6 +118,8 @@ function ClinicPage() {
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
+  if (!selected) return null;
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <header className="fixed inset-x-0 top-0 z-40 border-b border-header-border bg-header/90 text-primary-foreground backdrop-blur-xl">
